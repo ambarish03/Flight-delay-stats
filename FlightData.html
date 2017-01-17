@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+  h2
+  {text-align:center};
+  </style>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
+	<script type="text/javascript">
+	
+	format = d3.time.format("%d-%m-%Y (%H:%M h)");
+	
+	function draw(geo_data) {
+		"use strict";
+        var margin = 75,
+            width = 1400 - margin,
+            height = 600 - margin;
+
+		var year_val = 2003;
+
+        d3.select("body")
+          .append("h2")
+          .text("Flight Delay Stats for Year " + year_val);
+          
+        var svg = d3.select("body")
+            .append("svg")
+            .attr("width", width + margin)
+            .attr("height", height + margin)
+            .append('g')
+            .attr('class', 'map');
+            
+        var projection = d3.geo.mercator()
+                               .scale(950)
+                               .translate([width / 0.59, height / 0.53]);
+
+        var path = d3.geo.path().projection(projection);
+
+        var map = svg.selectAll('path')
+                     .data(geo_data.features)
+                     .enter()
+                     .append('path')
+                     .attr('d', path)
+                     .style('fill', 'lightBlue')
+                     .style('stroke', 'black')
+                     .style('stroke-width', 0.5);
+                     
+        d3.csv("augmented_flight_data.csv", function(d) {
+        	d['airport'] = d['airport'];
+        	d['year'] = parseInt(d['year']);
+        	d['month'] = parseInt(d['X.month']);
+        	d['arr_flights'] = parseInt(d['arr_flights']);
+        	d['arr_del15'] = parseInt(d['arr_del15']);
+        	d['Latitude'] = +d['Latitude'];
+        	d['Longitude'] = +d['Longitude'];
+        	return d;
+      	}, plot_points);
+      	
+      	function plot_points(data) {
+      	
+      		function agg_airport_year(leaves) {
+      			var avg_percent = d3.mean(leaves, function(d) {
+                    return d['arr_del15']/d['arr_flights'];
+                });
+                
+                var coords = leaves.map(function(d) {
+                    return projection([+d.Longitude, +d.Latitude]);
+                });
+                
+                var center_x = d3.min(coords, function(d) {
+                	return d[0];
+                });
+                
+                var center_y = d3.min(coords, function(d) {
+                	return d[1];
+                });
+                
+                return {
+                  'percent_delayed' : avg_percent,
+                  'center_x' : center_x,
+                  'center_y' : center_y
+                };
+      		}
+      		
+      		var nested = d3.nest()
+                           .key(function(d) {return d['airport'];})
+                           .key(function(d) {return d['year'];})
+                           .rollup(agg_airport_year)
+                           .entries(data);
+            
+            var airport_list = ["ATL","LAX","ORD","DFW","JFK","DEN","SFO","CLT","LAS",
+            "PHX","MIA","IAH","SEA","MCO","EWR","MSP","BOS","DTW","PHL"];
+            
+            var filtered_nodes = [];
+            var filtered_node_scale_calc = [];
+            var filtered_data = [];
+            var new_d;
+            
+            airport_list.forEach(function(node) {
+            	filtered_nodes.push(nested.filter(function(d) 
+            	{return new String(d['key'])==node;}));
+            });
+            
+            nested.forEach(function(node) {
+            	for (var i=0;i<airport_list.length;i++) {
+            		if (node.key == airport_list[i]) {
+            			filtered_node_scale_calc.push(node);
+            		}
+            	}
+            });
+            
+            var flight_delay_max = d3.max(filtered_node_scale_calc, function(d) {
+            	var values_arr = [];
+            	for (var i=0; i<d.values.length; i++) {
+            		values_arr.push(d.values[i].values['percent_delayed']);
+            	}
+            	return d3.max(values_arr);
+            });
+            
+            var radius = d3.scale.sqrt()
+                           .domain([0, flight_delay_max])
+                           .range([0, 15]);
+            
+            /*filtered_nodes.forEach(function(node) {
+            	for (var i=0; i<node[0].values.length; i++) {
+            		if (+node[0].values[i].key == year_val) {
+            			new_d = [];
+            			new_d['percent_delayed'] = node[0].values[i].values['percent_delayed'];
+            			new_d['center_x'] = node[0].values[i].values['center_x'];
+            			new_d['center_y'] = node[0].values[i].values['center_y'];
+            			filtered_data.push({key: node[0].key, value: new_d});
+            		}
+            	}
+            });*/
+            
+            /*svg.append('g')
+               .attr("class", "bubble")
+               .selectAll("circle")
+               .data(filtered_data)
+               .enter()
+               .append("circle")
+               .attr('cx', function(d) { return d.value['center_x']; })
+               .attr('cy', function(d) { return d.value['center_y']; })
+               .attr('r', function(d) {
+                    return radius(d.value['percent_delayed']);
+               });*/
+            
+            function update(year_value) {
+            
+            	var filtered_data_mod = [];
+            	filtered_nodes.forEach(function(node) {
+            		for (var i=0; i<node[0].values.length; i++) {
+            			if (+node[0].values[i].key == year_value) {
+            				new_d = [];
+            				new_d['percent_delayed'] = node[0].values[i].values['percent_delayed'];
+            				new_d['center_x'] = node[0].values[i].values['center_x'];
+            				new_d['center_y'] = node[0].values[i].values['center_y'];
+            				filtered_data_mod.push({key: node[0].key, value: new_d});
+            			}
+            		}
+            	});
+            	
+            	d3.select("h2")
+                .text("Flight Delay Stats for Year " + year_value);
+                
+              var circles = [];
+
+              circles = svg.selectAll('circle')
+                               .data(filtered_data_mod);
+                               
+              //circles.exit().remove();
+              
+
+              circles.enter()
+                     .append("circle")
+                     .transition()
+                     .duration(500)
+                     .attr('cx', function(d) { return d.value['center_x']; })
+                     .attr('cy', function(d) { return d.value['center_y']; })
+                     .attr('r', function(d) {
+                     	debugger;
+                        return radius(d.value['percent_delayed']);
+                     });
+                     
+                debugger;
+            }
+            
+            var year_idx = 0;
+            var years = [];
+
+            filtered_nodes.forEach(function (d) {
+            	d.forEach(function(e) {
+            		for (var i=0; i<e.values.length; i++) {
+            			if (years.indexOf(+(e.values[i].key)) < 0) 
+            				years.push(+(e.values[i].key));
+            		}
+            	});
+            });
+
+          	var year_interval = setInterval(function() {
+            	update(years[year_idx]);
+
+            	year_idx++;
+
+            	if(year_idx >= years.length) {
+                	clearInterval(year_interval);
+
+                /*var buttons = d3.select("body")
+                        .append("div")
+                        .attr("class", "years_buttons")
+                        .selectAll("div")
+                        .data(years)
+                        .enter()
+                        .append("div")
+                        .text(function(d) {
+                            return d;
+                        });*/
+
+                /*buttons.on("click", function(d) {
+                    d3.select(".years_buttons")
+                      .selectAll("div")
+                      .transition()
+                      .duration(500)
+                      .style("color", "black")
+                      .style("background", "rgb(251, 201, 127)");
+
+                    d3.select(this)
+                      .transition()
+                      .duration(500)
+                      .style("background", "lightBlue")
+                      .style("color", "white");
+                    update(d);
+                });*/
+            }
+          }, 1000);
+      	}
+        
+	}
+	
+    </script>
+</head>
+<body>
+  <script type="text/javascript">
+  /*
+    Use D3 (not dimple.js) to load the TSV file
+    and pass the contents of it to the draw function
+    */
+  d3.json("gz_2010_us_040_00_5m.json", draw);
+  </script>
+</body>
+</html>
