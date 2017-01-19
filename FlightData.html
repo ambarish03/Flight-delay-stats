@@ -116,9 +116,6 @@
                   		'traffic_vol' : flight_volume
                 	};
       			}
-      			
-      			var x = d3.scale.ordinal().rangeBands([0, width],0.1,0.1),
-    			y = d3.scale.linear().range([height, 0]);
       		
       			var nested = d3.nest()
                            	.key(function(d) {return d['airport'];})
@@ -172,20 +169,28 @@
             		for (var i=0; i<node[0].values.length; i++) {
             			if (+node[0].values[i].key == 2003) {
             				new_d = [];
+            				new_d['airport_name'] = node[0].key;
             				new_d['traffic_vol'] = node[0].values[i].values['traffic_vol'];
             				filtered_data.push({key: node[0].key, value: new_d});
             			}
             		}
             	});
             	
+            	var x = d3.scale.ordinal().rangeBands([0, width],0.1,0.1).domain(airport_list);
+    			var y = d3.scale.linear().range([height, margin]).domain(traffic_extent);
+    			
+    			var traffic_extent = d3.extent(filtered_data, function(d) {
+              		return d.value['traffic_vol'];
+          		});
+            	
             	barchart.selectAll(".bar")
     			.data(filtered_data)
     			.enter().append("rect")
       			.attr("class", "bar")
-      			.attr("x", function(d) { return x(d.key); })
+      			.attr("x", function(d) { return x(d.value['airport_name']); })
       			.attr("y", function(d) { return y(d.value['traffic_vol']); })
-      			/*.attr("width", x.bandwidth())*/
-      			/*.attr("height", function(d) { return height - y(d.frequency); })*/;
+      			.attr("width", x.rangeBand())
+      			.attr("height", function(d) { return height - y(d.value['traffic_vol']); });
             	
             	debugger;
             	function update(year_value) {
