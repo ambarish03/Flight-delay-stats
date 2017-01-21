@@ -7,6 +7,16 @@
           		font-family: arial;
           		font-size: 1em;
         	}
+        	.chart_plot {
+        		float: right;
+        	}
+        	.axis path {
+  				stroke-width: 0.5px;
+			}
+			.axis line {
+  				shape-rendering: crispEdges;
+  				stroke: #000;
+			}
   		</style>
   		<script src="http://d3js.org/d3.v3.min.js"></script>
   		<script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
@@ -26,14 +36,14 @@
           	.append("h2")
           	.text("Flight Delay Stats for Year " + year_val);
           
-        	var svg = d3.select("body")
+        	var svg = d3.select(".map_plot")
             .append("svg")
             .attr("width", width + margin)
             .attr("height", height + margin)
             .append('g')
             .attr('class', 'map');
             
-            var	barchart = d3.select("body")
+            var	barchart = d3.select(".chart_plot")
 			.append("svg")
 			.attr("width", width + margin)
 			.attr("height", height + margin)
@@ -261,6 +271,8 @@
     	</script>
 	</head>
 	<body>
+		<div class="map_plot"></div>
+		<div class="chart_plot"></div>
 		<p id="menu"><b>Flight delay stats by year :</b><select></select>
   		<script type="text/javascript">
   			d3.json("gz_2010_us_040_00_5m.json", draw);
