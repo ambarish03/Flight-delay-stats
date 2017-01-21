@@ -3,8 +3,10 @@
 	<head>
 		<meta charset="utf-8">
   		<style>
-  			h2
-  			{text-align:center};
+  			.axis {
+          		font-family: arial;
+          		font-size: 1em;
+        	}
   		</style>
   		<script src="http://d3js.org/d3.v3.min.js"></script>
   		<script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
@@ -41,24 +43,6 @@
 			barchart.append("g")
     		.attr("class", "x axis")
     		.attr("transform", "translate(0," + height + ")");
-    		
-    		/*barchart.append("g")
-    		.attr("class", "y axis")
-  			.append("line")
-    		.attr("class", "domain")
-    		.attr("y2", height);*/
-    		
-    		//debugger;
-    		
-    		/*var menu = d3.select("#menu select")
-    					.on("change", change);*/
-			
-			var borderPath = barchart.append("rect")
-  			.attr("height", height + margin)
-  			.attr("width", width + margin)
-  			.style("stroke", "black")
-  			.style("fill", "none")
-  			.style("stroke-width", 1);
             
         	var projection = d3.geo.mercator()
                                .scale(950)
@@ -176,12 +160,20 @@
             		}
             	});
             	
-            	var x = d3.scale.ordinal().rangeBands([0, width],0.1,0.1).domain(airport_list);
-    			var y = d3.scale.linear().range([height, margin]).domain(traffic_extent);
-    			
-    			var traffic_extent = d3.extent(filtered_data, function(d) {
+            	var traffic_extent = d3.extent(filtered_data, function(d) {
               		return d.value['traffic_vol'];
           		});
+            	
+            	var x = d3.scale.ordinal().rangeBands([margin, width],0.5,0.5).domain(airport_list);
+    			var y = d3.scale.linear().range([height, margin]).domain(traffic_extent);
+    			
+            	var xAxis = d3.svg.axis()
+    						.scale(x)
+    						.orient("bottom");
+    						
+    			var yAxis = d3.svg.axis()
+    						.scale(y)
+              				.orient("left");
             	
             	barchart.selectAll(".bar")
     			.data(filtered_data)
@@ -191,8 +183,18 @@
       			.attr("y", function(d) { return y(d.value['traffic_vol']); })
       			.attr("width", x.rangeBand())
       			.attr("height", function(d) { return height - y(d.value['traffic_vol']); });
+      			
+      			barchart.append("g")
+    			.attr("class", "x axis")
+    			.attr("transform", "translate(0," + height + ")")
+    			.call(xAxis);
+    			
+    			barchart.append("g")
+    			.attr('class', 'y axis')
+              	.attr('transform', "translate(" + margin + ",0)")
+              	.call(yAxis);
             	
-            	debugger;
+            	//debugger;
             	function update(year_value) {
             		var filtered_data_mod = [];
             		filtered_nodes.forEach(function(node) {
