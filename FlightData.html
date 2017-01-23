@@ -3,23 +3,23 @@
 	<head>
 		<meta charset="utf-8">
   		<style>
-  			.axis {
+  			/*.axis {
           		font-family: arial;
           		font-size: 1em;
-        	}
-        	.chart_plot {
-        		float: right;
-        	}
-        	.axis path {
-  				stroke-width: 0.5px;
+        	}*/
+        	.axis text {
+				font-family: sans-serif;
+				font-size: 15px;
 			}
+			
+			.axis path,
 			.axis line {
-  				shape-rendering: crispEdges;
-  				stroke: #000;
+				fill: none;
+				stroke: black;
+				shape-rendering: crispEdges;
 			}
   		</style>
   		<script src="http://d3js.org/d3.v3.min.js"></script>
-  		<script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
 		<script type="text/javascript">
 	
 		format = d3.time.format("%d-%m-%Y (%H:%M h)");
@@ -27,13 +27,15 @@
 		function draw(geo_data) {
 			"use strict";
         	var margin = 75,
+        	padding = 100,
             width = 1400 - margin,
             height = 600 - margin;
+            var border=1,bordercolor='black';
 
 			var year_val = 2003;
 
         	d3.select("body")
-          	.append("h2")
+          	.select(".header_txt")
           	.text("Flight Delay Stats for Year " + year_val);
           
         	var svg = d3.select(".map_plot")
@@ -45,14 +47,10 @@
             
             var	barchart = d3.select(".chart_plot")
 			.append("svg")
-			.attr("width", width + margin)
-			.attr("height", height + margin)
+			.attr("width", width+margin)
+			.attr("height", height+margin)
 			.append("g")
 			.attr("class", "bar-chart");
-			
-			barchart.append("g")
-    		.attr("class", "x axis")
-    		.attr("transform", "translate(0," + height + ")");
             
         	var projection = d3.geo.mercator()
                                .scale(950)
@@ -158,53 +156,56 @@
             	var radius = d3.scale.sqrt()
                     		.domain([(flight_delay_min-0.02), flight_delay_max])
                            	.range([0, 15]);
-                           	
-                filtered_nodes.forEach(function(node) {
-            		for (var i=0; i<node[0].values.length; i++) {
-            			if (+node[0].values[i].key == 2003) {
-            				new_d = [];
-            				new_d['airport_name'] = node[0].key;
-            				new_d['traffic_vol'] = node[0].values[i].values['traffic_vol'];
-            				filtered_data.push({key: node[0].key, value: new_d});
-            			}
+                  
+                var traffic_vol_min = d3.min(filtered_node_scale_calc, function(d) {
+            		var values_arr = [];
+            		for (var i=0; i<d.values.length; i++) {
+            			values_arr.push(d.values[i].values['traffic_vol']);
             		}
+            		return d3.min(values_arr);
+            	});
+            	
+            	var traffic_vol_max = d3.max(filtered_node_scale_calc, function(d) {
+            		var values_arr = [];
+            		for (var i=0; i<d.values.length; i++) {
+            			values_arr.push(d.values[i].values['traffic_vol']);
+            		}
+            		return d3.max(values_arr);
             	});
             	
             	var traffic_extent = d3.extent(filtered_data, function(d) {
               		return d.value['traffic_vol'];
           		});
             	
-            	var x = d3.scale.ordinal().rangeBands([margin, width],0.5,0.5).domain(airport_list);
-    			var y = d3.scale.linear().range([height, margin]).domain(traffic_extent);
+            	var x = d3.scale.ordinal().rangeBands([padding, width],0.5,0.5).domain(airport_list);
+    			var y = d3.scale.linear().range([height, margin]).domain([(traffic_vol_min-2000),traffic_vol_max]);
     			
             	var xAxis = d3.svg.axis()
     						.scale(x)
-    						.orient("bottom");
+    						.orient("bottom")
+    						.ticks(19);
     						
     			var yAxis = d3.svg.axis()
     						.scale(y)
-              				.orient("left");
-            	
-            	barchart.selectAll(".bar")
-    			.data(filtered_data)
-    			.enter().append("rect")
-      			.attr("class", "bar")
-      			.attr("x", function(d) { return x(d.value['airport_name']); })
-      			.attr("y", function(d) { return y(d.value['traffic_vol']); })
-      			.attr("width", x.rangeBand())
-      			.attr("height", function(d) { return height - y(d.value['traffic_vol']); });
-      			
-      			barchart.append("g")
+              				.orient("left")
+              				.ticks(6);
+              				
+              	barchart.append("g")
     			.attr("class", "x axis")
-    			.attr("transform", "translate(0," + height + ")")
+    			.attr("transform", "translate(0," + (height) + ")")
     			.call(xAxis);
     			
     			barchart.append("g")
     			.attr('class', 'y axis')
-              	.attr('transform', "translate(" + margin + ",0)")
+              	.attr('transform', "translate(" + (margin+24) + ",0)")
               	.call(yAxis);
-            	
-            	//debugger;
+              	
+              	barchart.append("text")
+            	.attr("text-anchor", "middle")
+            	.attr("transform", "translate("+ (20) +","+((height+padding)/2)+")rotate(-90)")
+            	.text("# of annual flight arrivals")
+            	.attr("font-size","20px");
+      			
             	function update(year_value) {
             		var filtered_data_mod = [];
             		filtered_nodes.forEach(function(node) {
@@ -219,7 +220,7 @@
             			}
             		});
             	
-            		d3.select("h2")
+            		d3.select(".header_txt")
                 	.text("Flight Delay Stats for Year " + year_value);
                 
               		var circles = [];
@@ -236,6 +237,35 @@
                     	.attr('r', function(d) {
                     		return radius(d.value['percent_delayed']);
                     	});
+                    	
+                    	var legend = svg.append("g")
+              			.attr("class", "legend")
+              			.attr("transform", "translate(" + (width - 100) + "," + 20 + ")")
+              			.selectAll("g")
+              			.data(["18% delayed", "36% delayed"])
+              			.enter().append("g");
+              			
+              		legend.append("circle")
+              			.attr("cy", function(d, i) {
+                  			return i * 30;
+              			})
+              			.attr("r", function(d) {
+                  			if (d == "18% delayed") {
+                      			return radius(0.18);
+                  			} else {
+                      			return radius(0.36);
+                  			}
+              			});
+              			
+              		legend.append("text")
+              			.attr("y", function(d, i) {
+                  			return i * 30 + 5;
+              			})
+              			.attr("x", radius(0.18) * 6)
+              				.text(function(d) {
+                  				return d;
+              				})
+              			.attr("font-size","16px");
             		}
             		else {
             			circles.transition()
@@ -244,6 +274,35 @@
                     		return radius(d.value['percent_delayed']);
                     	});
             		}
+            		
+            		filtered_data_mod = [];
+            		filtered_nodes.forEach(function(node) {
+            			for (var i=0; i<node[0].values.length; i++) {
+            				if (+node[0].values[i].key == year_value) {
+            					new_d = [];
+            					new_d['airport_name'] = node[0].key;
+            					new_d['traffic_vol'] = node[0].values[i].values['traffic_vol'];
+            					filtered_data_mod.push({key: node[0].key, value: new_d});
+            				}
+            			}
+            		});
+            		
+            		if (year_value == 2003) {
+            			barchart.selectAll(".bar")
+    						.data(filtered_data_mod)
+    						.enter().append("rect")
+      					.attr("class", "bar")
+      					.attr("x", function(d) { return x(d.value['airport_name']); })
+      					.attr("y", function(d) { return y(d.value['traffic_vol']); })
+      					.attr("width", x.rangeBand())
+      					.attr("height", function(d) { return height - y(d.value['traffic_vol']); });
+      				}
+      				else {
+      					barchart.selectAll(".bar")
+    					.data(filtered_data_mod)
+      					.attr("y", function(d) { return y(d.value['traffic_vol']); })
+      					.attr("height", function(d) { return height - y(d.value['traffic_vol']); });
+      				}
                 	//debugger;
             	}
             
@@ -258,12 +317,27 @@
             			}
             		});
             	});
+            	
+            	
 
           		var year_interval = setInterval(function() {
             		update(years[year_idx]);
             		year_idx++;
             		if(year_idx >= years.length) {
                 		clearInterval(year_interval);
+                		
+                		var menu = d3.select("#menu select");
+            			menu.selectAll("option")
+      						.data(years)
+    						.enter().append("option")
+      						.text(function(d) { return d; });
+      						
+      					menu.on("change", function(d) {
+                    		d3.select(this)
+                      			.transition()
+                      			.duration(500);
+                    		update(+this.selectedOptions[0].value);
+                		});
             		}
           		}, 1000);
       		}
@@ -271,11 +345,39 @@
     	</script>
 	</head>
 	<body>
-		<div class="map_plot"></div>
-		<div class="chart_plot"></div>
-		<p id="menu"><b>Flight delay stats by year :</b><select></select>
   		<script type="text/javascript">
   			d3.json("gz_2010_us_040_00_5m.json", draw);
   		</script>
+  		<table width = "100%">
+  			<tbody>
+  				<tr>
+  					<td align="center">
+  						<h2 class="header_txt"></h2>
+  					</td>
+  				</tr>
+  			</tbody>
+  		</table>
+  		<table>
+  			<tbody>
+  				<tr>
+  					<td>
+  						<div class="map_plot"></div>
+  					</td>
+  					<td>
+  						<div class="chart_plot"></div>
+  					</td>
+  				</tr>
+  			</tbody>
+  		</table>
+  		<table width = "100%">
+  			<tbody>
+  				<tr>
+  					<td width="10%"></td>
+  					<td align="left">
+  						<h3 id="menu">Select option to view individual year stats: <select></select></h3>
+  					</td>
+  				</tr>
+  			</tbody>
+  		</table>
 	</body>
 </html>
