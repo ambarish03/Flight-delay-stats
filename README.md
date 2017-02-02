@@ -31,6 +31,7 @@ Consider using a color palette for the stacked bar charts that is different from
 Response: I changed the color palette to "blue" from "red-green". I updated the dropdown option's text to "No data available for ..." for months of a specific year whose data was not available in the dataset. Lastly, I updated the banner text to "Detailed statistics for  January, 2016" which includes the year.
 
 References
+
 1. https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_the_United_States Accessed on 1/14/2017.
 2. https://bl.ocks.org/mbostock/5577023 Accessed on 01/25/2017.
 3. https://github.com/d3/d3-3.x-api-reference/blob/master/Stack-Layout.md Accessed on 01/21/2017.
