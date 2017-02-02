@@ -6,6 +6,7 @@ Secondly, I thought that weather must be the most important contributing factor 
 Lastly, I noticed that the number of delayed flights tended to increase during the winter months. While most of the delay was attributed to “aviation system delay”, it could have been a result of bad weather which may explain the seasonal differences in the delay statistics.
 
 Reviewer Feedback
+
 Feedback from Julianna B.: 
 The first thing I noticed was that the flight delay has stayed fairly consistent for the period between 2003 and 2012 and has started coming down slightly from 2013 onwards. I noticed that the number of flights has been also steadily decreasing from 2007 onwards, this could have resulted in the decrease in the delay in recent years. 
 Instead of showing the annual flight volume, consider normalizing the data for each month. That way the numbers will not be affected by the months of data available in the dataset. Secondly, instead of showing the numbers in an absolute scale, consider using a truncated y-axis so that the variation in the data can be seen more easily.
