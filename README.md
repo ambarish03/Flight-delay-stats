@@ -1,9 +1,14 @@
 Data Story
 
 I looked at the flight arrival statistics for several airports in the US and I sampled the airports such that different geography and climate are well represented in the sample.
-Considering this dataset includes delay statistics, I wanted to investigate if the proportion of delayed flights have systematically gone up or down over the years. My hypothesis was it would have a downward trend considering improvements in air traffic control and other things. Surprisingly, I noticed that it has gone down slightly in the last couple of years for most of the airports included in this study but so has the average number of monthly arrivals. So the decrease in the number of delayed flights may be a result of lower traffic volume but it can’t be said for sure as there could be other factors which were not controlled.
-Secondly, I thought that weather must be the most important contributing factor for flight delays. I was proven wrong once again as the most important reason for the number of delayed flights was aviation system delay. It was also interesting to note that in terms of the amount of delay, the most important factor was late arriving aircraft. In addition, the airport with the most number of delayed flights for a given month always differed from the airport with the highest average delay for the same period.
-Lastly, I noticed that the number of delayed flights tended to increase during the winter months. While most of the delay was attributed to “aviation system delay”, it could have been a result of bad weather which may explain the seasonal differences in the delay statistics.
+Considering this dataset includes delay statistics, I wanted to investigate if the proportion of delayed flights have systematically gone up or down over the years. My hypothesis was it would have a downward trend considering improvements in air traffic control and other things. 
+In addition, I thought that weather must be the most important contributing factor for flight delays and therefore I investigated the presence of seasonal effects by plotting the monthly data for each year in the dataset.
+
+Design
+
+I started by creating an animation wherein we cycle through the years and plot flight delay and flight volume next to each other. The objective here was to compare the proportion of delayed flights between the years and see if it has any noticeable trend when viewed next to the average number of flight arrivals.
+Next, I introduced the dropdown so that any specific year in the dataset can be selected. This would help us focus on any particular year as details might get overlooked when viewing the entire animation.
+In order to view seasonal effects as well as address comments about viewing the delay for each of the attributable causes, I introduced the stacked bar chart which included the proportion of delayed flights and the amount of delay for a given month. I introduced a selectbox wherein the user may select any particular month to view the aforementioned artifacts for that period. It should be noted that the dropdown selection is filtered based on the year selection in the top-half of the window.
 
 Reviewer Feedback
 
@@ -24,3 +29,10 @@ I liked the animation. It looks like the number of flights have come down over t
 Consider using a color palette for the stacked bar charts that is different from red-green as many people have difficulties distinguishing different shades of red and green. Secondly, update the dropdown option's text to something that shows which month's data is unavailable for the dataset being studied. Lastly, add the year to the month in the banner "Detailed statistics for ...".
 
 Response: I changed the color palette to "blue" from "red-green". I updated the dropdown option's text to "No data available for ..." for months of a specific year whose data was not available in the dataset. Lastly, I updated the banner text to "Detailed statistics for  January, 2016" which includes the year.
+
+References
+1. https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_the_United_States Accessed on 1/14/2017.
+2. https://bl.ocks.org/mbostock/5577023 Accessed on 01/25/2017.
+3. https://github.com/d3/d3-3.x-api-reference/blob/master/Stack-Layout.md Accessed on 01/21/2017.
+4. https://bost.ocks.org/mike/constancy/ Accessed on 01/16/2017.
+5. https://www.rita.dot.gov/bts/help/aviation/html/understanding.html#q6 Accessed on 01/15/2016
