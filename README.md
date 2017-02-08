@@ -37,3 +37,63 @@ References
 3. https://github.com/d3/d3-3.x-api-reference/blob/master/Stack-Layout.md Accessed on 01/21/2017.
 4. https://bost.ocks.org/mike/constancy/ Accessed on 01/16/2017.
 5. https://www.rita.dot.gov/bts/help/aviation/html/understanding.html#q6 Accessed on 01/15/2016
+
+
+Findings:
+
+For the first section (the 3 plots on the top):
+The proportion of delayed flights has been more or less constant across time for Los Angeles, Denver, JFK, and Dallas-Fort Worth. In case of Hartsfield-Jackson Atlanta airport and Chicago O'Hare, the proportion of delayed flights has steadily decreased and is currently at its lowest level for the window of time studied in this exercise.
+It should be noted that the proportion of delayed flights has been at its lowest in recent years. But there has been two or three incidents of significant increases in the proportion of delayed flights for all the airports included in this study.
+In case of Chicago O'Hare, the decrease in the proportion of delayed flights can be attributed to the decrease in traffic as there is almost 1:1 correspondence between the two metric as exhibited in the two plots above.
+For JF Kennedy and Los Angeles Intl airport, the traffic has been fairly consistent over the years and so has the proportion of delayed flight arrivals.
+In case of Dallas Fort Worth, there is a steady dip in the number of monthly arrivals but the proportion of delayed flights have been fairly steady.
+In case of Hartsfield-Jackson Atlanta airports, the proportion of delayed flights has reduced significantly in recent years which can be attributed to the improvements and renovations that happened between 2001 and 2014 and is well documented on the Wikipedia (https://en.wikipedia.org/wiki/Hartsfield%E2%80%93Jackson_Atlanta_International_Airport) page.
+In case of Denver airport, the proportion of delayed traffic has been fairly constant but the average number of monthly arrivals has steadily increased. This has been possible due to the addition of the sixth runway which was commissioned in 2003 (http://www.airport-technology.com/projects/denver/).
+
+For the second section (next 2 plots on the page):
+The proportion of delayed flights reach their maximum during the summer and winter seasons. However, when the proportion of delay (time) is taken into account, the summer season proves to be the worst performing season.
+The increased proportion of delayed flights and delays during the summer season can be attributed to the higher volume of flight arrivals during the summer season. The summer season had the highest monthly flight arrivals for 12 out of 12 years included in this study.
+P.S. > The flight statistics from 2003 and 2016 were ignored when analyzing the seasonal nature of the delay due to lack of data for certain months.
+
+Review Questions and Answers:
+Reviewer: There are no comments! Please add them at each logical step in the code so the reader knows what is going on.
+AB: Comments added. I hope they are not too wordy or redundant.
+
+Reviewer: how does flight delay change over time?
+AB: Addressed in findings and changed chart type.
+
+Reviewer: has that affected delay statistics?
+AB: Addressed in findings.
+
+Reviewer: is there a seasonal pattern and is that consistent across the years?
+AB: Addressed in findings
+
+Reviewer: are some 'delay types' more prevalent than others?
+AB: In the revised design, I am no longer looking at the five different buckets.
+
+Reviewer: explanatory one - see link here for a recap on the difference
+AB: Whether it is explanatory or exploratory or yet some other kind - you can decide.
+
+Reviewer: the page is very wide - I work on a Macbook and I had to zoom out several times to see what's going on.
+AB: I work on IMac 27, still I have tried to shrink as much as possible.
+
+Reviewer: the animation is a technically accomplished thing but is it the best way of showing change over time? I'm aching to see average flight time arrivals and delay statistics on a time line to see how they've changed over the years and whether there is a correlation?
+AB: Please see if the revised chart addresses what you have asked for.
+
+Reviewer: the map looks great but is this the right choice for delay? You could use it as a key to show where the airports are if you have room on the page.
+AB: That's what I did in the revised design. 
+
+Reviewer: is black a reader-friendly colour? Something lighter on the eye might be better?
+AB: To me, it is. When you review future assignments, please take into consideration some people have very serous color vision impairment. I asked one of my friends to choose the colors and in her opinion, they should be good.
+
+Reviewr: what do ORD, ATL, LAX mean - you need to have the full airport names somewhere to make it more accessible
+AB: Please check the tooltip for each airport in the map.
+
+Review: minutes and proportion - it's great that you've shown both proportion (% is always more accessible than ratio) and minutes. Instead of having both charts, you could have a radio button that flicks between them. See an example of the use of the radio button here
+AB: It has been addressed in the new design.
+
+Reviewer: You have not outlined your key findings in either. Please make sure they are in BOTH the graphic and the README file before you resubmit.
+AB: It has been added in both sections. By the way, the project guidelines did not say that this has to be in the README. The data story can be only 4 sentences. The design can only include design choices that were made. So as I read it, I did not see a placeholder for the findings. SO I created a new one called "Findings".
+
+Reviewer: You haven't included any older files, although you have documented the evolution of the project in your README file. Please make sure you include this file as well as the new version when you resubmit.
+AB: I have added the last one as "index_initial.html" and this one is "index.html" as well as "index_final.html"
