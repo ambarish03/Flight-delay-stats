@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+  		<style>
+  			/*.axis {
+          		font-family: arial;
+          		font-size: 1em;
+        	}*/
+        	.hidden_div_2, .hidden_div_3 {
+        		opacity: 0;
+        	}
+        	
+        	.axis text {
+				font-family: sans-serif;
+				font-size: 15px;
+			}
+			
+			.axis path,
+			.axis line {
+				fill: none;
+				stroke: black;
+				shape-rendering: crispEdges;
+			}
+  		</style>
+  		<script src="http://d3js.org/d3.v3.min.js"></script>
+		<script type="text/javascript">
+	
+		format = d3.time.format("%d-%m-%Y (%H:%M h)");
+	
+		function draw(geo_data) {
+			"use strict";
+        	var margin = 75,
+        	padding = 100,
+            width = 1400 - margin,
+            height = 600 - margin;
+            var border=1,bordercolor='black';
+          
+        	var svg = d3.select(".map_plot")
+            .append("svg")
+            .attr("width", width + margin)
+            .attr("height", height + margin)
+            .append('g')
+            .attr('class', 'map');
+            
+            var	barchart = d3.select(".chart_plot")
+			.append("svg")
+			.attr("width", width+margin)
+			.attr("height", height+margin)
+			.append("g")
+			.attr("class", "bar-chart");
+			
+			var	stackedChartByCount = d3.select(".chart_plot_delay_by_count")
+											.append("svg")
+											.attr("width", width+margin)
+											.attr("height", height+margin)
+											.append("g")
+											.attr("class", "stacked-chart-count");
+											
+			var	stackedChartByDelay = d3.select(".chart_plot_delay_by_time")
+											.append("svg")
+											.attr("width", width+margin)
+											.attr("height", height+margin)
+											.append("g")
+											.attr("class", "stacked-chart-delay");
+            
+        	var projection = d3.geo.mercator()
+                               .scale(950)
+                               .translate([width / 0.59, height / 0.53]);
+
+        	var path = d3.geo.path().projection(projection);
+
+        	var map = svg.selectAll('path')
+                     .data(geo_data.features)
+                     .enter()
+                     .append('path')
+                     .attr('d', path)
+                     .style('fill', 'lightBlue')
+                     .style('stroke', 'black')
+                     .style('stroke-width', 0.5);
+                     
+        	d3.csv("augmented_flight_data.csv", function(d) {
+        		d['airport'] = d['airport'];
+        		d['year'] = parseInt(d['year']);
+        		d['month'] = parseInt(d['X.month']);
+        		d['arr_flights'] = parseInt(d['arr_flights']);
+        		d['arr_del15'] = parseInt(d['arr_del15']);
+        		d['carrier_ct'] = parseFloat(d['carrier_ct']);
+        		d['weather_ct'] = parseFloat(d['X.weather_ct']);
+        		d['nas_ct'] = parseFloat(d['nas_ct']);
+        		d['security_ct'] = parseFloat(d['security_ct']);
+        		d['late_aircraft_ct'] = parseFloat(d['late_aircraft_ct']);
+        		d['X.arr_delay'] = parseFloat(d['X.arr_delay']);
+        		d['X.carrier_delay'] = parseFloat(d['X.carrier_delay']);
+        		d['weather_delay'] = parseFloat(d['weather_delay']);
+        		d['nas_delay'] = parseFloat(d['nas_delay']);
+        		d['security_delay'] = parseFloat(d['security_delay']);
+        		d['late_aircraft_delay'] = parseFloat(d['late_aircraft_delay']);
+        		d['Latitude'] = +d['Latitude'];
+        		d['Longitude'] = +d['Longitude'];
+        		return d;
+      		}, plot_points);
+      	
+      		function plot_points(data) {
+      	
+      			function agg_airport_year(leaves) {
+      				var avg_percent = d3.mean(leaves, function(d) {
+                    	return d['arr_del15']/d['arr_flights'];
+                	});
+                	
+                	var carrier_late_abs_pct = d3.mean(leaves, function(d) {
+                    	return d['carrier_ct']/d['arr_flights'];
+                	});
+                	
+                	var weather_late_abs_pct = d3.mean(leaves, function(d) {
+                    	return d['weather_ct']/d['arr_flights'];
+                	});
+                	
+                	var nas_late_abs_pct = d3.mean(leaves, function(d) {
+                    	return d['nas_ct']/d['arr_flights'];
+                	});
+                	
+                	var security_late_abs_pct = d3.mean(leaves, function(d) {
+                    	return d['security_ct']/d['arr_flights'];
+                	});
+                	
+                	var aircraft_late_abs_pct = d3.mean(leaves, function(d) {
+                    	return d['late_aircraft_ct']/d['arr_flights'];
+                	});
+                	
+                	var flight_volume = d3.sum(leaves, function(d) {
+                    	return d['arr_flights'];
+                	});
+                	
+                	var total_delay_mins = d3.mean(leaves, function(d) {
+                    	return d['X.arr_delay']/d['arr_del15'];
+                	});
+                	
+                	var carrier_late_mins = d3.mean(leaves, function(d) {
+                    	return d['X.carrier_delay']/d['arr_del15'];
+                	});
+                	
+                	var weather_late_mins = d3.mean(leaves, function(d) {
+                    	return d['weather_delay']/d['arr_del15'];
+                	});
+                	
+                	var nas_late_mins = d3.mean(leaves, function(d) {
+                    	return d['nas_delay']/d['arr_del15'];
+                	});
+                	
+                	var security_late_mins = d3.mean(leaves, function(d) {
+                    	return d['security_delay']/d['arr_del15'];
+                	});
+                	
+                	var aircraft_late_mins = d3.mean(leaves, function(d) {
+                    	return d['late_aircraft_delay']/d['arr_del15'];
+                	});
+                
+                	var coords = leaves.map(function(d) {
+                    	return projection([+d.Longitude, +d.Latitude]);
+                	});
+                
+                	var center_x = d3.min(coords, function(d) {
+                		return d[0];
+                	});
+                
+                	var center_y = d3.min(coords, function(d) {
+                		return d[1];
+                	});
+                	
+                	var months_list = d3.set();
+                		leaves.forEach(function(d) {
+                    	months_list.add(d['month']);
+                	});
+                
+                	return {
+                  		'percent_delayed' : avg_percent,
+                  		'aircraft_late_abs_pct' : aircraft_late_abs_pct,
+                  		'security_late_abs_pct' : security_late_abs_pct,
+                  		'nas_late_abs_pct' : nas_late_abs_pct,
+                  		'weather_late_abs_pct' : weather_late_abs_pct,
+                  		'carrier_late_abs_pct' : carrier_late_abs_pct,
+                  		'total_delay_mins' : total_delay_mins,
+                  		'carrier_late_mins' : carrier_late_mins,
+                  		'weather_late_mins' : weather_late_mins,
+                  		'nas_late_mins' : nas_late_mins,
+                  		'security_late_mins' : security_late_mins,
+                  		'aircraft_late_mins' : aircraft_late_mins,
+                  		'center_x' : center_x,
+                  		'center_y' : center_y,
+                  		'traffic_vol' : flight_volume/months_list.size()
+                	};
+      			}
+      		
+      			var nested = d3.nest()
+                           	.key(function(d) {return d['airport'];})
+                           	.key(function(d) {return d['year'];})
+                           	.rollup(agg_airport_year)
+                           	.entries(data);
+                           	
+                var nested_by_month = d3.nest()
+                           	.key(function(d) {return d['airport'];})
+                           	.key(function(d) {return d['year'];})
+                           	.key(function(d) {return d['month'];})
+                           	.rollup(agg_airport_year)
+                           	.entries(data);
+            
+            	var airport_list = ["ATL","LAX","ORD","DFW","JFK","DEN","SFO",
+            	"CLT","LAS","PHX","MIA","IAH","SEA","MCO","MSP","BOS",
+            	"DTW","PHL"];
+            
+            	var filtered_nodes = [], filtered_nodes_by_month = [];
+            	var filtered_node_scale_calc = [], 
+            	filtered_node_scale_calc_by_month = [], new_d;
+            
+            	airport_list.forEach(function(node) {
+            		filtered_nodes.push(nested.filter(function(d) 
+            		{return new String(d['key'])==node;}));
+            	});
+            	
+            	airport_list.forEach(function(node) {
+            		filtered_nodes_by_month.push(nested_by_month.filter(function(d) 
+            		{return new String(d['key'])==node;}));
+            	});
+            
+            	nested.forEach(function(node) {
+            		for (var i=0;i<airport_list.length;i++) {
+            			if (node.key == airport_list[i]) {
+            				filtered_node_scale_calc.push(node);
+            			}
+            		}
+            	});
+            	
+            	nested_by_month.forEach(function(node) {
+            		for (var i=0;i<airport_list.length;i++) {
+            			if (node.key == airport_list[i]) {
+            				filtered_node_scale_calc_by_month.push(node);
+            			}
+            		}
+            	});
+            
+            	var flight_delay_max = d3.max(filtered_node_scale_calc, function(d) {
+            		var values_arr = [];
+            		for (var i=0; i<d.values.length; i++) {
+            			values_arr.push(d.values[i].values['percent_delayed']);
+            		}
+            		return d3.max(values_arr);
+            	});
+            	
+            	var flight_delay_max_monthly = d3.max(filtered_node_scale_calc_by_month, function(d) {
+            		var values_arr = [];
+            		for (var i=0; i<d.values.length; i++) {
+            			for (var j=0;j<d.values[i].values.length;j++) {
+            				values_arr.push(d.values[i].values[j].values['percent_delayed']);
+            			}
+            		}
+            		return d3.max(values_arr);
+            	});
+            	
+            	var flight_delay_max_mins_monthly = d3.max(filtered_node_scale_calc_by_month, function(d) {
+            		var values_arr = [];
+            		for (var i=0; i<d.values.length; i++) {
+            			for (var j=0;j<d.values[i].values.length;j++) {
+            				values_arr.push(d.values[i].values[j].values['total_delay_mins']);
+            			}
+            		}
+            		return d3.max(values_arr);
+            	});
+            
+            	var flight_delay_min = d3.min(filtered_node_scale_calc, function(d) {
+            		var values_arr = [];
+            		for (var i=0; i<d.values.length; i++) {
+            			values_arr.push(d.values[i].values['percent_delayed']);
+            		}
+            		return d3.min(values_arr);
+            	});
+            
+            	var radius = d3.scale.sqrt()
+                    		.domain([(flight_delay_min-0.02), flight_delay_max])
+                           	.range([7, 14]);
+                  
+                var traffic_vol_min = d3.min(filtered_node_scale_calc, function(d) {
+            		var values_arr = [];
+            		for (var i=0; i<d.values.length; i++) {
+            			values_arr.push(d.values[i].values['traffic_vol']);
+            		}
+            		return d3.min(values_arr);
+            	});
+            	
+            	var traffic_vol_max = d3.max(filtered_node_scale_calc, function(d) {
+            		var values_arr = [];
+            		for (var i=0; i<d.values.length; i++) {
+            			values_arr.push(d.values[i].values['traffic_vol']);
+            		}
+            		return d3.max(values_arr);
+            	});
+            	
+            	var x = d3.scale.ordinal().rangeBands([padding, width],0.5,0.5).domain(airport_list);
+    			var y = d3.scale.linear().range([height, margin]).domain([(traffic_vol_min-2000),traffic_vol_max]);
+    			var y_stacked_abs = d3.scale.linear().range([height, margin]).domain([0,flight_delay_max_monthly]);
+    			var y_stacked_delay = d3.scale.linear().range([height, margin])
+    									.domain([0,flight_delay_max_mins_monthly]);
+    			var z = d3.scale.ordinal().range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56"]);
+    			
+            	var xAxis = d3.svg.axis()
+    						.scale(x)
+    						.orient("bottom")
+    						.ticks(19);
+    						
+    			var yAxis = d3.svg.axis()
+    						.scale(y)
+              				.orient("left")
+              				.ticks(6);
+              				
+              	var yAxisStacked = d3.svg.axis()
+    						.scale(y_stacked_abs)
+              				.orient("left")
+              				.ticks(6);
+              				
+              	var yAxisStackedDelay = d3.svg.axis()
+    						.scale(y_stacked_delay)
+              				.orient("left")
+              				.ticks(6);
+              				
+              	barchart.append("g")
+    				.attr("class", "x axis")
+    				.attr("transform", "translate(0," + (height) + ")")
+    				.call(xAxis);
+    			
+    			barchart.append("g")
+    				.attr('class', 'y axis')
+              		.attr('transform', "translate(" + (margin+24) + ",0)")
+              		.call(yAxis);
+              	
+              	barchart.append("text")
+            	.attr("text-anchor", "middle")
+            	.attr("transform", "translate("+ (20) +","+((height+padding)/2)+")rotate(-90)")
+            	.text("# of average monthly flight arrivals")
+            	.attr("font-size","20px");
+      			
+            	function update(year_value) {
+            		d3.select(".hidden_div_3").style("opacity", 0);
+            		d3.select(".chart_plot_delay_by_count").style("opacity", 0);
+            		d3.select(".chart_plot_delay_by_time").style("opacity", 0);
+            		d3.select(".hidden_div_5").style("opacity", 0);
+            		
+            		var filtered_data_mod = [];
+            		filtered_nodes.forEach(function(node) {
+            			for (var i=0; i<node[0].values.length; i++) {
+            				if (+node[0].values[i].key == year_value) {
+            					new_d = [];
+            					new_d['percent_delayed'] = node[0].values[i].values['percent_delayed'];
+            					new_d['center_x'] = node[0].values[i].values['center_x'];
+            					new_d['center_y'] = node[0].values[i].values['center_y'];
+            					filtered_data_mod.push({key: node[0].key, value: new_d});
+            				}
+            			}
+            		});
+            	
+            		d3.select(".header_txt")
+                	.text("Delay Statistics for " + year_value);
+                
+              		var circles = [];
+
+              		circles = svg.selectAll('circle').data(filtered_data_mod);
+              		
+					if (d3.select(".hidden_div_4")[0][0].innerText == "") {
+              			circles.enter()
+                    	.append("circle")
+                    	.transition()
+                    	.duration(500)
+                    	.attr('cx', function(d) { return d.value['center_x']; })
+                    	.attr('cy', function(d) { return d.value['center_y']; })
+                    	.attr('r', function(d) {
+                    		return radius(d.value['percent_delayed']);
+                    	});
+                    	
+                    	var legend = svg.append("g")
+              			.attr("class", "legend")
+              			.attr("transform", "translate(" + (width - 100) + "," + 20 + ")")
+              			.selectAll("g")
+              			.data(["18% delayed", "36% delayed"])
+              			.enter().append("g");
+              			
+              		legend.append("circle")
+              			.attr("cy", function(d, i) {
+                  			return i * 30;
+              			})
+              			.attr("r", function(d) {
+                  			if (d == "18% delayed") {
+                      			return radius(0.18);
+                  			} else {
+                      			return radius(0.36);
+                  			}
+              			});
+              			
+              		legend.append("text")
+              			.attr("y", function(d, i) {
+                  			return i * 30 + 5;
+              			})
+              			.attr("x", radius(0.18) * 6)
+              				.text(function(d) {
+                  				return d;
+              				})
+              			.attr("font-size","16px");
+            		}
+            		else {
+            			circles.transition()
+                    	.duration(500)
+                    	.attr('r', function(d) {
+                    		return radius(d.value['percent_delayed']);
+                    	});
+            		}
+            		
+            		
+            		filtered_data_mod = [];
+            		filtered_nodes.forEach(function(node) {
+            			for (var i=0; i<node[0].values.length; i++) {
+            				if (+node[0].values[i].key == year_value) {
+            					new_d = [];
+            					new_d['airport_name'] = node[0].key;
+            					new_d['traffic_vol'] = node[0].values[i].values['traffic_vol'];
+            					filtered_data_mod.push({key: node[0].key, value: new_d});
+            				}
+            			}
+            		});
+            		
+            		if (d3.select(".hidden_div_4")[0][0].innerText == "") {
+            			barchart.selectAll(".bar")
+    						.data(filtered_data_mod)
+    						.enter().append("rect")
+      					.attr("class", "bar")
+      					.attr("x", function(d) { return x(d.value['airport_name']); })
+      					.attr("y", function(d) { return y(d.value['traffic_vol']); })
+      					.attr("width", x.rangeBand())
+      					.attr("height", function(d) { return height - y(d.value['traffic_vol']); });
+      				}
+      				else {
+      					barchart.selectAll(".bar")
+    					.data(filtered_data_mod)
+      					.attr("y", function(d) { return y(d.value['traffic_vol']); })
+      					.attr("height", function(d) { return height - y(d.value['traffic_vol']); });
+      				}
+      				d3.select(".hidden_div_4").text(year_value).style("opacity", 0);
+            	}
+            
+            	var year_idx = 0;
+            	var years = [];
+
+            	filtered_nodes.forEach(function (d) {
+            		d.forEach(function(e) {
+            			for (var i=0; i<e.values.length; i++) {
+            				if (years.indexOf(+(e.values[i].key)) < 0) 
+            					years.push(+(e.values[i].key));
+            			}
+            		});
+            	});
+
+          		var year_interval = setInterval(function() {
+            		update(years[year_idx]);
+            		year_idx++;
+            		if(year_idx >= years.length) {
+            			d3.select(".hidden_div_2").style("opacity", 1);
+                		clearInterval(year_interval);
+                		
+                		var menu = d3.select("#menu select");
+                		var hyperlink_txt = d3.select("#monthly_link");
+                		var defaultOptionName = 2016;
+                		
+                		hyperlink_txt.text("Click here to view monthly data for 2016");
+                		
+            			menu.selectAll("option")
+      						.data(years)
+    						.enter().append("option")
+    						.property("selected", function(d){ return d === defaultOptionName; })
+      						.text(function(d) { return d; });
+      						
+      					menu.on("change", function(d) {
+                    		d3.select(this)
+                      			.transition()
+                      			.duration(500);
+                    		update(+this.selectedOptions[0].value);
+                    		hyperlink_txt.text("Click here to view monthly data for " + this.selectedOptions[0].value);
+                		});
+                							
+                		hyperlink_txt.on("click", function(d) {
+                			d3.select(".hidden_div_3").style("opacity", 1);
+                			d3.select(".chart_plot_delay_by_count").style("opacity", 1);
+                			d3.select(".chart_plot_delay_by_time").style("opacity", 1);
+							var year_value = +this.textContent.substring(36);
+							
+							var months = [];
+							filtered_nodes_by_month.forEach(function (d) {
+            					d.forEach(function(e) {
+            					for (var i=0; i<e.values.length; i++) {
+            						if (+e.values[i].key == year_value) 
+            							for(var k = 0; k<e.values[i].values.length; k++) {
+            								if (months.indexOf(+(e.values[i].values[k].key)) < 0) {
+            									months.push(+(e.values[i].values[k].key));
+            								}
+            							}
+            						}
+            					});
+            				});
+            				
+            				var month_idx = 0;
+                			var month_names = [
+    							'January', 'February', 'March', 'April', 'May',
+    							'June', 'July', 'August', 'September',
+    							'October', 'November', 'December'
+    						];
+    						var stat_months = [1,2,3,4,5,6,7,8,9,10,11,12];
+    						
+    						function monthNumToName(monthnum) {
+    							return month_names[monthnum-1] || '';
+							}
+							
+							function monthNameToNum(monthname) {
+    							var month = month_names.indexOf(monthname);
+    							return (month + 1);
+							}
+                			
+                			update_by_month(months[month_idx]);
+                			var defaultMonthlyOptionName = months[0];
+                			
+                			var monthly_menu = d3.select("#monthly_menu select");
+                			monthly_menu.selectAll("option").data(stat_months)
+                				.enter().append("option")
+    							.property("selected", function(d){ return d === defaultMonthlyOptionName; })
+      							.text(function(d) { return monthNumToName(d); });
+      							
+      						for(var i=0;i<monthly_menu.length;i++) {
+      							for(var j=0;j<monthly_menu[i].length;j++) {
+      								for(var k=0;k<monthly_menu[i][j].length;k++) {
+      									if(months.indexOf(+monthly_menu[i][j][k].value) < 0 && months.indexOf(monthNameToNum(monthly_menu[i][j][k].value)) < 0) {
+      										monthly_menu[i][j][k].value = (k+1);
+      										monthly_menu[i][j][k].text = "No data available for "+monthNumToName(k+1);
+      									}
+      									else {
+      										if ((k+1) == defaultMonthlyOptionName) monthly_menu[i][j][k].selected = true;
+      										monthly_menu[i][j][k].text = monthNumToName(k+1);
+      										monthly_menu[i][j][k].value = (k+1);
+      									}
+      								}
+      							}
+      						}
+
+      						monthly_menu.on("change", function(d) {
+                    			d3.select(this)
+                      				.transition()
+                      				.duration(500);
+                    			update_by_month(+this.selectedOptions[0].value);
+                			});
+							
+            				function update_by_month(month_value) {
+            					d3.select(".hidden_div_5").style("opacity", 1);
+            					d3.select(".header_txt_2")
+                				.text("Detailed statistics for " + monthNumToName(month_value) + ", " + year_value);
+            					
+            					var filtered_data_mod_by_mon = [];
+									filtered_nodes_by_month.forEach(function(node) {
+									for (var i=0; i<node[0].values.length; i++) {
+										if (+node[0].values[i].key == year_value) {
+											for (var j=0; j<node[0].values[i].values.length; j++) {
+												if (+node[0].values[i].values[j].key == month_value) {
+													new_d = [];
+													new_d['Air Carrier Delay'] = node[0].values[i].values[j].values['carrier_late_abs_pct'];
+            										new_d['Extreme Weather'] = node[0].values[i].values[j].values['weather_late_abs_pct'];
+            										new_d['Aviation System Delay'] = node[0].values[i].values[j].values['nas_late_abs_pct'];
+            										new_d['Security Delay'] = node[0].values[i].values[j].values['security_late_abs_pct'];
+            										new_d['Aircraft Arriving Late'] = node[0].values[i].values[j].values['aircraft_late_abs_pct'];
+            										new_d['airport_name'] = node[0].key;
+            										filtered_data_mod_by_mon.push(new_d);
+												}
+											}
+										}
+									}
+								});
+
+            					var keys = ["Air Carrier Delay","Extreme Weather",
+            					"Aviation System Delay","Security Delay","Aircraft Arriving Late"];
+            					z.domain(keys);
+            					
+            					var reshaped_data = d3.layout.stack()(keys.map(function(c) {
+    								return filtered_data_mod_by_mon.map(function(d) {
+      									return {x: d.airport_name, y: d[c]};
+    								});
+  								}));
+  								var layer = stackedChartByCount.selectAll(".layer").data(reshaped_data);
+  							
+  								if (d3.select(".hidden_div")[0][0].innerText == "") {
+  									layer.enter().append("g")
+      									.attr("class", "layer")
+      									.style("fill", function(d, i) { return z(i); });
+      							
+      								layer.selectAll("rect")
+      									.data(function(d) { return d; })
+    									.enter().append("rect")
+      									.attr("x", function(d) { return x(d.x); })
+      									.attr("y", function(d) { return y_stacked_abs(d.y + d.y0); })
+      									.attr("height", function(d) { return y_stacked_abs(d.y0) - y_stacked_abs(d.y + d.y0); })
+      									.attr("width", x.rangeBand() - 1);
+      							
+      								stackedChartByCount.append("g")
+    									.attr("class", "x axis")
+    									.attr("transform", "translate(0," + (height) + ")")
+    									.call(xAxis);
+    									
+    								stackedChartByCount.append("g")
+      									.attr("class", "y axis")
+      									.attr('transform', "translate(" + (margin+24) + ",0)")
+      									.call(yAxisStacked);
+      									
+    								stackedChartByCount.append("text")
+            							.attr("text-anchor", "middle")
+            							.attr("transform", "translate("+ (50) +","+((height+padding)/2)+")rotate(-90)")
+            							.text("Proportion of delayed monthly arrivals")
+            							.attr("font-size","20px");
+    									
+    								var stacked_legend = stackedChartByCount.append("g")
+      									.attr("font-family", "sans-serif")
+      									.attr("font-size", 15)
+      									.attr("text-anchor", "end")
+    									.selectAll("g")
+    									.data(keys.slice().reverse())
+    									.enter().append("g")
+      									.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+      									
+      								stacked_legend.append("rect")
+      									.attr("x", width - 19)
+      									.attr("width", 19)
+      									.attr("height", 19)
+      									.attr("fill", z);
+
+  									stacked_legend.append("text")
+      									.attr("x", width - 24)
+      									.attr("y", 9.5)
+      									.attr("dy", "0.32em")
+      									.text(function(d) { return d; });
+      							}
+      							else {
+      								layer.style("fill", function(d, i) { return z(i); });
+      							
+      								layer.selectAll("rect")
+      								.data(function(d) { return d; })
+      								.attr("y", function(d) { return y_stacked_abs(d.y + d.y0); })
+      								.attr("height", function(d) { return y_stacked_abs(d.y0) - y_stacked_abs(d.y + d.y0); });
+      							}
+      							
+      							var filtered_data_mod_by_mon = [];
+									filtered_nodes_by_month.forEach(function(node) {
+									for (var i=0; i<node[0].values.length; i++) {
+										if (+node[0].values[i].key == year_value) {
+											for (var j=0; j<node[0].values[i].values.length; j++) {
+												if (+node[0].values[i].values[j].key == month_value) {
+													new_d = [];
+													new_d['Air Carrier Delay'] = node[0].values[i].values[j].values['carrier_late_mins'];
+            										new_d['Extreme Weather'] = node[0].values[i].values[j].values['weather_late_mins'];
+            										new_d['Aviation System Delay'] = node[0].values[i].values[j].values['nas_late_mins'];
+            										new_d['Security Delay'] = node[0].values[i].values[j].values['security_late_mins'];
+            										new_d['Aircraft Arriving Late'] = node[0].values[i].values[j].values['aircraft_late_mins'];
+            										new_d['airport_name'] = node[0].key;
+            										filtered_data_mod_by_mon.push(new_d);
+												}
+											}
+										}
+									}
+								});
+								
+								var reshaped_data_by_delay = d3.layout.stack()(keys.map(function(c) {
+    								return filtered_data_mod_by_mon.map(function(d) {
+      									return {x: d.airport_name, y: d[c]};
+    								});
+  								}));
+  								
+  								var layer = stackedChartByDelay.selectAll(".layer").data(reshaped_data_by_delay);
+  								
+  								if (d3.select(".hidden_div")[0][0].innerText == "") {
+  									d3.select(".hidden_div").text(year_value).style("opacity", 0);
+  									
+  									layer.enter().append("g")
+      									.attr("class", "layer")
+      									.style("fill", function(d, i) { return z(i); });
+      									
+      								layer.selectAll("rect")
+      									.data(function(d) { return d; })
+    									.enter().append("rect")
+      									.attr("x", function(d) { return x(d.x); })
+      									.attr("y", function(d) { return y_stacked_delay(d.y + d.y0); })
+      									.attr("height", function(d) { return y_stacked_delay(d.y0) - y_stacked_delay(d.y + d.y0); })
+      									.attr("width", x.rangeBand() - 1);
+      									
+      								stackedChartByDelay.append("g")
+    									.attr("class", "x axis")
+    									.attr("transform", "translate(0," + (height) + ")")
+    									.call(xAxis);
+    									
+    								stackedChartByDelay.append("g")
+      									.attr("class", "y axis")
+      									.attr('transform', "translate(" + (margin+24) + ",0)")
+      									.call(yAxisStackedDelay);
+      									
+    								stackedChartByDelay.append("text")
+            							.attr("text-anchor", "middle")
+            							.attr("transform", "translate("+ (50) +","+((height+padding)/2)+")rotate(-90)")
+            							.text("Average delay (minutes)")
+            							.attr("font-size","20px");
+            							
+            						var stacked_legend_delay = stackedChartByDelay.append("g")
+      									.attr("font-family", "sans-serif")
+      									.attr("font-size", 15)
+      									.attr("text-anchor", "end")
+    									.selectAll("g")
+    									.data(keys.slice().reverse())
+    									.enter().append("g")
+      									.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+      									
+      								stacked_legend_delay.append("rect")
+      									.attr("x", width - 19)
+      									.attr("width", 19)
+      									.attr("height", 19)
+      									.attr("fill", z);
+
+  									stacked_legend_delay.append("text")
+      									.attr("x", width - 24)
+      									.attr("y", 9.5)
+      									.attr("dy", "0.32em")
+      									.text(function(d) { return d; });
+  								}
+  								else {
+  									layer.style("fill", function(d, i) { return z(i); });
+      							
+      								layer.selectAll("rect")
+      								.data(function(d) { return d; })
+      								.attr("y", function(d) { return y_stacked_delay(d.y + d.y0); })
+      								.attr("height", function(d) { return y_stacked_delay(d.y0) - y_stacked_delay(d.y + d.y0); });
+  								}
+								d3.select(".hidden_div").text(year_value).style("opacity", 0);
+      						}
+                		});
+            		}
+          		}, 1000);
+      		}
+		}
+    	</script>
+	</head>
+	<body>
+  		<script type="text/javascript">
+  			d3.json("gz_2010_us_040_00_5m.json", draw);
+  		</script>
+  		<table width = "100%">
+  			<tbody>
+  				<tr>
+  					<td width="5%">
+  					</td>
+  					<td width="70%" align="left">
+  						<div class="hidden_div_2">
+  							<h3 id="menu">Select option to view yearly stats: <select></select></h3>
+  						</div>
+  					</td>
+  					<td align="left">
+  					</td>
+  				</tr>
+  			</tbody>
+  		</table>
+  		<table width = "100%">
+  			<tbody>
+  				<tr>
+  					<td align="center">
+  						<h2 class="header_txt"></h2>
+  					</td>
+  				</tr>
+  			</tbody>
+  		</table>
+  		<table>
+  			<tbody>
+  				<tr>
+  					<td>
+  						<div class="map_plot"></div>
+  					</td>
+  					<td>
+  						<div class="chart_plot"></div>
+  					</td>
+  				</tr>
+  			</tbody>
+  		</table>
+  		<table width = "100%">
+  			<tbody>
+  				<tr>
+  					<td width="95%" align="right">
+  						<a href="#"><h3 id="monthly_link"></h3></a>
+  					</td>
+  					<td width="5%">
+  					</td>
+  				</tr>
+  			</tbody>
+  		</table>
+  		<table width = "100%">
+  			<tbody>
+  				<tr>
+  					<td width="5%">
+  					</td>
+  					<td width="70%" align="left">
+  						<div class="hidden_div_3">
+  							<h3 id="monthly_menu">Select option to view monthly stats: <select></select></h3>
+  						</div>
+  					</td>
+  					<td align="left">
+  					</td>
+  				</tr>
+  			</tbody>
+  		</table>
+  		<table width = "100%">
+  			<tbody>
+  				<tr>
+  					<td align="center">
+  						<div class="hidden_div_5"><h2 class="header_txt_2"></h2></div>
+  					</td>
+  				</tr>
+  			</tbody>
+  		</table>
+  		<table>
+  			<tbody>
+  				<tr>
+  					<td>
+  						<div class="chart_plot_delay_by_count"></div><div class="hidden_div"></div>
+  					</td>
+  					<td>
+  						<div class="chart_plot_delay_by_time"></div><div class="hidden_div_4"></div>
+  					</td>
+  				</tr>
+  			</tbody>
+  		</table>
+	</body>
+</html>
