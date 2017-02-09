@@ -1,0 +1,51 @@
+form, p, li {
+  	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  	font-size: 17px;
+}
+			
+.findings_txt {
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  	font-size: 22px;
+}
+			
+.stacked_by_airport {
+    position: relative;
+}
+  			
+div.tooltip {	
+    position: absolute;			
+    text-align: left;			
+    width: 140px;					
+    height: 60px;					
+	padding: 2px;				
+    font: 12px sans-serif;		
+    background: gray;	
+    border: 0px;		
+    border-radius: 8px;			
+    pointer-events: none;			
+}
+			
+.tooltip_pie {
+	background: #eee;
+    position: absolute;
+    color: #333;
+    text-align: center;
+    top: 5px;
+    left: 320px;
+}
+			
+.hidden_div_2, .hidden_div_3 {
+    opacity: 0;
+}
+        	
+.axis text {
+	font-family: sans-serif;
+	font-size: 15px;
+}
+			
+.axis path,
+	.axis line {
+	fill: none;
+	stroke: black;
+	shape-rendering: crispEdges;
+}
