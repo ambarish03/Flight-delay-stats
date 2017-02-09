@@ -97,3 +97,38 @@ AB: It has been added in both sections. By the way, the project guidelines did n
 
 Reviewer: You haven't included any older files, although you have documented the evolution of the project in your README file. Please make sure you include this file as well as the new version when you resubmit.
 AB: I have added the last one as "index_initial.html" and this one is "index.html" as well as "index_final.html"
+
+Reviews Round #2:
+Reviewer: Code formatting looks generally consistent and effective.
+
+As mentioned previously, since this is such a large file you could consider putting the css and the javascript into separate files and looking at the code to see if you can put any code repetition into functions. You can reference them in your index.html as follows:
+
+<link rel="stylesheet" href="my_css.css">
+
+<script src="my_js.js"></script>
+AB: The changes should be there in this revision.
+
+Reviewer: Perhaps you could incorporate this into the title? Something like "Chicago and Atlanta significantly decrease delay times."
+
+AB: The changes have been made in this revision.
+
+Reviewer: there seem to be two identical bar charts - "Proportion of total arrivals by season" and "Proportion of delayed arrivals by season". Is the right hand side bar a duplicate that hasn't been removed?
+
+AB: They were not the same. Anyway it has been replaced with a pie chart.
+
+Reviewer: the duplicate bar chart mentioned above seems to have ALMOST exactly the same proportion for each season across the years. i.e. it's essentially saying the same thing 12 times. Would a bar chart with 'all years' or a pie chart be a more appropriate choice here?
+
+AB: There's a pie chart now.
+
+Reviewer: the graphic is still very big. If you don't reassess the layout (see below) you need to make the text larger as I need to zoom out several times to see the whole dashboard at which point it was unreadable.
+
+AB: I have shrunk it to Macbook size. A screenshot from Macbook at 100% zoom level is attached for reference and dispute resolution.
+
+Reviewer: see comments in the 'clear finding' comments above
+AB: Changed the title.
+
+Reviewer: as mentioned in the previous review % is always considered more accessible than proportion or ratio. You don't need to change the underlying data, just the tooltip.
+AB: It should be there.
+
+Reviewer: you've created such a fabulous interactive dashboard and you've already mastered how to append d3.js elements to HTML elements. Therefore, I'd suggest a quick reassessment of your overall layout. Is there a way you could rearrange things so that all the charts fit on the same page and you are using the space to the best effect? Is your graphic getting the message across to the reader in the most accessible way? Are they going to understand whats going on in the first 15 seconds/minute?
+AB: Sorry, I am out of ideas. I have stopped thinking long ago. At this time I am doing things based on what will help me get the passing grade. I have little to no interest in this subject. This is not a Data Analysis course, maybe a Data Aesthetics course. I have seen this theme in the assignment for Module 4 and 2 as well. And your opinion might differ but I cannot be convinced.
