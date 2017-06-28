@@ -131,4 +131,4 @@ Reviewer: as mentioned in the previous review % is always considered more access
 AB: It should be there.
 
 Reviewer: you've created such a fabulous interactive dashboard and you've already mastered how to append d3.js elements to HTML elements. Therefore, I'd suggest a quick reassessment of your overall layout. Is there a way you could rearrange things so that all the charts fit on the same page and you are using the space to the best effect? Is your graphic getting the message across to the reader in the most accessible way? Are they going to understand whats going on in the first 15 seconds/minute?
-AB: Sorry, I am out of ideas. I have stopped thinking long ago. At this time I am doing things based on what will help me get the passing grade. I have little to no interest in this subject. This is not a Data Analysis course, maybe a Data Aesthetics course. I have seen this theme in the assignment for Module 4 and 2 as well. And your opinion might differ but I cannot be convinced.
+AB: Please review the revised layout.
